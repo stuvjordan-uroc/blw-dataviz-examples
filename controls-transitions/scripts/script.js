@@ -1,3 +1,5 @@
+import { makeProportions } from "./modules/makeproportions.js"
+
 
 //change dataURL to whatever link you need
 const dataURL = "https://blw-dataviz-data.s3.us-east-2.amazonaws.com/election-confidence-and-legitimacy/election_confidence_and_legitimacy.gz"
@@ -55,45 +57,26 @@ function drawViz(data) {
   const points = svg.selectAll("circle.data-point")
     .data(pointData)
   
-  //Make response to key and key to response maps so we can make a proportions object.
-  //you'll have to change these to fit your case
-  const responseToKey = new Map([
-    ["Definitely the rightful winner", "def"],
-    ["Probably the rightful winner", "prob"],
-    ["Probably not the rightful winner", "probnot"],
-    ["Definitely not the rightful winner", "defnot"]
-  ])
-  const keyToResponse = new Map([
-    ["def", "Definitely the rightful winner"],
-    ["prob", "Probably the rightful winner"],
-    ["probnot", "Probably not the rightful winner"],
-    ["defnot", "Definitely not the rightful winner"]
-  ])
-  //make the proportion object
-  const proportion = {
-    all: Object.fromEntries(keyToResponse.entries()),
-    republicans: Object.fromEntries(keyToResponse.entries()),
-    democrats: Object.fromEntries(keyToResponse.entries())
-  }
-  
-  labelData.forEach((response) => {
-    //compute the proportion for the whole group
-    proportion.all[responseToKey.get(response)] = pointData.filter((row) => (row.response === response)).length/pointData.length     
-    //compute the proportion for the dems
-    const dems = pointData.filter((row) => (row.pid3 === "Democrat"))
-    proportion.democrats[responseToKey.get(response)] = dems.filter((row) => (row.response === response)).length/dems.length
-    //compute the proportion for the reps
-    const reps = pointData.filter((row) => (row.pid3 === "Republican"))
-    proportion.republicans[responseToKey.get(response)] = reps.filter((row) => (row.response === response)).length/reps.length
-  })
-  
+  //make the proportions map
   /*
-  The proprtion object can now be used like this:
+    This uses the function makeProportions imported from modules/makeproportions.js
+    As you can see, you pass that function...
+    1. The array with the response labels
+    2. An array with the parties you want to include
+    3. The point data
+    4. the key in the point data object that points to the response of each row
+    5. the key in the point data object that points the pid
 
-  proportion.republicans[responseToKey.get("Definitely not the rightful winner")]
+    
+    What's returned is a Map that you can use to get proportions like this:
+    
+    proportion.get("Democrat").get("Probably the rightful winner")
+
+    For docs on the Map object see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
   */
-  
+  const proportion = makeProportions(labelData,["Democrat", "Republican"], pointData, "response", "pid3")
   console.log(proportion)
+  
 
 
 }
