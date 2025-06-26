@@ -1,5 +1,5 @@
 import { makeProportions } from "./modules/makeproportions.js"
-
+import { makeVerticalScale } from "./modules/makeverticalscale.js"
 
 //change dataURL to whatever link you need
 const dataURL = "https://blw-dataviz-data.s3.us-east-2.amazonaws.com/election-confidence-and-legitimacy/election_confidence_and_legitimacy.gz"
@@ -34,6 +34,8 @@ function drawViz(data) {
 
   //Create the data arrays we need for the viz
   //Of course you'll have to make changes here to fit your particular data.
+  //Note that it is important that you put the "highest" response first in the labelData
+  //array, and the "lowest" response last.
   const labelData = [
     "Definitely the rightful winner",
     "Probably the rightful winner",
@@ -52,9 +54,9 @@ function drawViz(data) {
   //Create selections for the labels and points and bind the data.
   //Each time a button is pushed, we will update what's displayed by
   //manipulating these selections
-  const labels = svg.selectAll("text.response-label")
+  const labelsSelection = svg.selectAll("text.response-label")
     .data(labelData)
-  const points = svg.selectAll("circle.data-point")
+  const pointsSelection = svg.selectAll("circle.data-point")
     .data(pointData)
   
   //make the proportions map
@@ -72,13 +74,20 @@ function drawViz(data) {
     
     proportion.get("Democrat").get("Probably the rightful winner")
 
+    This Map includes proportions for the whole group that you an access like this:
+
+    proportion.get("all").get("Probably the rightful winner")
+
     For docs on the Map object see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
   */
   const proportion = makeProportions(labelData,["Democrat", "Republican"], pointData, "response", "pid3")
   console.log(proportion)
-  
 
-
+  //set up the vertical scales
+  const verticalPadding = 20
+  //the following is not working
+  const vScale = makeVerticalScale(verticalPadding, labelData, proportion, yScale)
+  console.log(vScale)
 }
 
 
