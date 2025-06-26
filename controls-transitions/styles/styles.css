@@ -19,6 +19,10 @@ circle.data-point.democrat {
   fill: blue;
 }
 
+text.response-label {
+  font-size: small;
+}
+
 @media screen and (min-width: 1024px) {
   .svg-frame {
     width: 1000px;
