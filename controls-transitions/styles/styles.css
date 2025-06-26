@@ -1,0 +1,27 @@
+.svg-frame {
+  width: 310px;
+  height: 175px;
+}
+
+circle.data-point {
+  r: 10px;
+  stroke-width: 1px;
+  fill-opacity: 0.25;
+}
+
+circle.data-point.republican {
+  stroke: red;
+  fill: red;
+}
+
+circle.data-point.democrat {
+  stroke: blue;
+  fill: blue;
+}
+
+@media screen and (min-width: 1024px) {
+  .svg-frame {
+    width: 1000px;
+    height: 560px;
+  }
+}

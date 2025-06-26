@@ -1,0 +1,11 @@
+.svg-frame {
+  width: 310px;
+  height: 175px;
+}
+
+@media screen and (min-width: 1024px) {
+  .svg-frame {
+    width: 1000px;
+    height: 560px;
+  }
+}
