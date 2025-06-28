@@ -4,7 +4,7 @@
 }
 
 circle.data-point {
-  r: 10px;
+  r: 4px;
   stroke-width: 1px;
   fill-opacity: 0.25;
 }
@@ -17,6 +17,11 @@ circle.data-point.republican {
 circle.data-point.democrat {
   stroke: blue;
   fill: blue;
+}
+
+circle.data-point.hidden {
+  stroke: none;
+  fill: none;
 }
 
 text.response-label {

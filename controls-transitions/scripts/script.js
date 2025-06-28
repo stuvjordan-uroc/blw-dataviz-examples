@@ -1,8 +1,12 @@
 import { makeProportions } from "./modules/makeproportions.js"
 import { makeVerticalScale } from "./modules/makeverticalscale.js"
+import { drawStart } from "./modules/drawstart.js"
+import { drawFactory } from "./modules/drawfcns.js"
 
 //change dataURL to whatever link you need
-const dataURL = "https://blw-dataviz-data.s3.us-east-2.amazonaws.com/election-confidence-and-legitimacy/election_confidence_and_legitimacy.gz"
+//const dataURL = "https://blw-dataviz-data.s3.us-east-2.amazonaws.com/election-confidence-and-legitimacy/election_confidence_and_legitimacy.gz"
+const dataURL = "data/election_confidence_and_legitimacy.gz"
+
 
 function drawViz(data) {
   //write all your visualization code inside this function.
@@ -18,8 +22,8 @@ function drawViz(data) {
   //insert the svg, set width and height, and put it in a d3 selection `svg`
   const svg = d3.select(frameClass)
     .append("svg")
-      .attr("width", "100%")
-      .attr("height", "100%")
+    .attr("width", "100%")
+    .attr("height", "100%")
 
   //set margins and make scales for arbitrary position in main drawing area
   const margin = {
@@ -49,21 +53,41 @@ function drawViz(data) {
     }))//select the columns you want
     .filter((el) => (["Democrat", "Republican"].includes(el.pid3)))//filter out rows with independents or missing pid3
     .filter((el) => (labelData.includes(el.response)))//filter out rows with missing responses
-  console.log(pointData)
+
+  //for quicker dev...sample 1000 rows from the data
+  const sampleData = new Array()
+  for (let idx = 0; idx < 1000; idx++) {
+    const sampleIndex = Math.floor(pointData.length * Math.random())
+    sampleData.push({
+      pid3: pointData[sampleIndex].pid3,
+      response: pointData[sampleIndex].response
+    })
+    pointData.splice(sampleIndex, 1)
+  }
+
+
+  console.log(sampleData)
 
   //Create selections for the labels and points and bind the data.
   //Each time a button is pushed, we will update what's displayed by
   //manipulating these selections
   const labelsSelection = svg.selectAll("text.response-label")
     .data(labelData)
+  //const pointsSelection = svg.selectAll("circle.data-point")
+  //  .data(pointData)
+
+  //for faster dev:
+
   const pointsSelection = svg.selectAll("circle.data-point")
-    .data(pointData)
-  
+    .data(sampleData)
+
+  console.log("rows with no pid3:", sampleData.filter(el => (["Democrat", "Republican"].includes(el.pid3))))
+
   //make the proportions map
   /*
     This uses the function makeProportions imported from modules/makeproportions.js
     As you can see, you pass that function...
-    1. The array with the response labels
+    1. The array with the response labels *ELEMENTS MUST BE IN ORDER FROM HIGHEST TO LOWEST!!!!*
     2. An array with the parties you want to include
     3. The point data
     4. the key in the point data object that points to the response of each row
@@ -80,14 +104,68 @@ function drawViz(data) {
 
     For docs on the Map object see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
   */
-  const proportion = makeProportions(labelData,["Democrat", "Republican"], pointData, "response", "pid3")
+  const proportion = makeProportions(labelData, ["Democrat", "Republican"], pointData, "response", "pid3")
   console.log(proportion)
 
   //set up the vertical scales
+  /*
+    This uses the function makeVerticalScale imported above from modules/makeverticalscale.js
+    It's parameters are:
+
+    + padding -- a number giving the vertical space between the segments
+    + proportion -- the proportion Map you created in the previous step
+    + yScale -- the d3 linear scale for positioning (bottom to top) in the main plot area
+  */
   const verticalPadding = 20
-  //the following is not working
-  const vScale = makeVerticalScale(verticalPadding, labelData, proportion, yScale)
+  const vScale = makeVerticalScale(verticalPadding, proportion, yScale)
   console.log(vScale)
+
+  //ok, here we go!
+  /*
+    we'll start by rendering the "starting position" of the points, which will
+    simply have all of them uniformly jittered across the entire main drawing area.
+
+    Do this by calling drawStart, imported above from modules/drawstart.  drawStart
+    takes 4 argumnets:
+    + pointsSelection -- the d3 selection with the points data joined to it.
+    + xScale -- the linear scale covering the x axis of the main drawing area
+    + yScale -- the linear scale covering the y axis of the main drawing area
+    + partyKey -- the key in the data pointing to the party id (e.g. "pid3")
+
+  */
+
+  drawStart(pointsSelection, xScale, yScale, "pid3")
+
+
+
+  d3.select(".controls")
+    .on("click", (event) => {
+      switch (event.target.id) {
+        case "demOnly":
+          console.log("left button pushed")
+          pointsSelection
+            .attr("cx", 30)
+          break
+        case "together":
+          console.log("middle button pushed")
+          pointsSelection
+            .attr("cx", 150)
+          break
+        case "compare":
+          console.log("right button pushed")
+          pointsSelection
+            .attr("cx", 270)
+          break
+        case "repOnly":
+          console.log("right button pushed")
+          pointsSelection
+            .attr("cx", 270)
+          break
+        default:
+          throw new Error("button click with an unrecognized id:", event.target.id)
+      }
+    })
+
 }
 
 
